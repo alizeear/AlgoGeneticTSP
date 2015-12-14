@@ -4,7 +4,8 @@
     <script src="js/Chart.js"></script>
 </head>
 <body>
-<canvas id="canvas" width="300" height="300" style="border: 1px solid black"></canvas>
+<canvas id="canvas" width="200" height="200" style="border: 1px solid black"></canvas>
+<br/>
 <canvas id="myChart" width="700" height="400"></canvas>
 
 <script type="text/javascript">
@@ -14,92 +15,44 @@
  *       Initialisation        *
  ******************************/
 
-var nbVilles    = 15;
-var tauxMutation = 0.02;
-var tauxCroisement = 0.98;// résultats meilleur avec 0.5, 50 en taille de pop, 100 ité, 8 villes et 0.9 mutation
-var taillePopulation = 20;
-var nbIteration = 100;
-var courbe = [];
+var nbVilles            = 8;
+var tauxMutation        = 0.03;
+var tauxCroisement      = 0.95;
+var taillePopulation    = 20;
+var nbIteration         = 50;
+var courbe              = [];
 
-// Création des villes aléatoirement
+
 function creerVilles(){
     var destinations = [];
-    for(var i=1; i<nbVilles+1; i++){
-        var posX = (Math.random()*200).toFixed();
-        var posY = (Math.random()*200).toFixed();
-        var ville = {
-            id  : i,
-            x   : posX,
-            y   : posY
-        };
-        destinations.push(ville);
-    }
-    //            Création manuel pour test
-//    var ville = {
-//        id  : 1,
-//        x   : 20,
-//        y   : 20
+    // Création des villes aléatoirement
+//    for(var i=1; i<nbVilles+1; i++){
+//        var posX = (Math.random()*200).toFixed();
+//        var posY = (Math.random()*200).toFixed();
+//        var ville = {id: i, x: posX, y: posY};
+//        destinations.push(ville);
 //    }
+
+    // Création manuel pour test
+    var ville = {id: 1, x: 20, y: 20};
+    destinations.push(ville);
+    ville = {id: 2, x: 40, y: 80};
+    destinations.push(ville);
+    ville = {id: 3, x: 60, y: 140};
+    destinations.push(ville);
+    ville = {id: 4, x: 120, y: 140};
+    destinations.push(ville);
+    ville = {id: 5, x: 160, y: 100};
+    destinations.push(ville);
+    ville = {id: 6, x: 120, y: 60};
+    destinations.push(ville);
+    ville = {id: 7, x: 80, y: 40};
+    destinations.push(ville);
+    ville = {id: 8, x: 160, y: 20};
+    destinations.push(ville);
+//    ville = {id: 9, x: 200 ,y: 200};
 //    destinations.push(ville);
-//    ville = {
-//        id  : 2,
-//        x   : 40,
-//        y   : 80
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 3,
-//        x   : 60,
-//        y   : 140
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 4,
-//        x   : 120,
-//        y   : 140
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 5,
-//        x   : 160,
-//        y   : 100
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 6,
-//        x   : 120,
-//        y   : 60
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 7,
-//        x   : 80,
-//        y   : 40
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 8,
-//        x   : 160,
-//        y   : 20
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 8,
-//        x   : 160,
-//        y   : 20
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 9,
-//        x   : 200,
-//        y   : 200
-//    }
-//    destinations.push(ville);
-//    ville = {
-//        id  : 10,
-//        x   : 80,
-//        y   : 100
-//    }
+//    ville = {id: 10, x: 80, y: 100};
 //    destinations.push(ville);
     return destinations;
 }
@@ -110,249 +63,229 @@ function creerVilles(){
  *          Lancement          *
  ******************************/
 
-    // Création des villes
-destinations = creerVilles();
-// Création d'une population de départ
-pop = creerPopulation(taillePopulation, true);
-// on prend le meilleur trajet de la population initiale pour afficher sa longueur
-var trajetInitial = getMeilleurTrajet(pop);
-// on l'affiche en console
-console.log("Trajet Initial: "+getLongueur(trajetInitial).toFixed());
+destinations = creerVilles();                                           // Création des villes
+pop = creerPopulation(taillePopulation, true);                          // Création d'une population de départ
+var trajetInitial = getMeilleurTrajet(pop);                             // on prend le meilleur trajet de la population initiale pour afficher sa longueur
+console.log("Trajet Initial: "+getLongueur(trajetInitial).toFixed());   // on l'affiche en console
 
-// on déclare un nouveau tableau de population
-var finalPopulation = []
-// on initialise notre nouvelle population avec des trajets vides
-finalPopulation = trajetVide(taillePopulation, finalPopulation);
+var finalPopulation = [];                                               // on déclare un nouveau tableau de population
+finalPopulation = trajetVide(taillePopulation, finalPopulation);        // on initialise la nouvelle population avec des trajets vides
 
-finalPopulation = evolutionPopulation(pop);
-for(var i=0; i<nbIteration; i++){
+finalPopulation = evolutionPopulation(pop);                             // on fait évoluer la population une première fois
+
+for(var i=0; i<nbIteration; i++){                                       // On boucle suivant le nombre d'itérations défini dans les variables, notre population évolue donc n fois
     finalPopulation = evolutionPopulation(finalPopulation);
-    finalPopulation.sort(function(a, b){
+    finalPopulation.sort(function(a, b){                                // Tri du tableau de la population finale
         return getLongueur(a)-getLongueur(b);
     });
-    courbe[i] = getLongueur(finalPopulation[0]);
+    courbe[i] = getLongueur(finalPopulation[0]);                        // On stock la valeur du meilleur trajet pour créer la courbe pour l'analyse
 }
-
 // affichage du résultat final
 console.log("Operation terminee");
 console.log("Trajet Final: " + getLongueur(getMeilleurTrajet(finalPopulation)).toFixed());
 console.log("Solution: ");
 console.log(toString(getMeilleurTrajet(finalPopulation)));
+console.log("Gain: ", ((1-(getLongueur(getMeilleurTrajet(finalPopulation))/getLongueur(trajetInitial)))*100).toFixed()+"%");    // Affichage du gain en pourcentage
 
+
+/*******************************
+ *       Tracé du chemin       *
+ ******************************/
 
 var canvas = document.getElementById("canvas").getContext("2d");
 var theBest = [];
 theBest = getMeilleurTrajet(finalPopulation);
-canvas.beginPath();      // Début du chemin
-canvas.moveTo(theBest[0].x,theBest[0].y);    // Le tracé part du point 50,50
-for(var i=1; i<theBest.length; i++){
+canvas.beginPath();                             // Début du chemin
+canvas.moveTo(theBest[0].x,theBest[0].y);       // Le tracé part du point 50,50
+for(var i=1; i<theBest.length; i++){            // Boucle sur l'ensemble des points pour les tracer dans le canvas
     var x = theBest[i].x;
     var y = theBest[i].y;
     canvas.lineTo(x,y);
 }
-canvas.closePath();      // Fermeture du chemin (facultative)
-canvas.lineWidth = 1;         // Définition de la largeur de ligne
-canvas.stroke();          // Application du contour
+canvas.closePath();                             // Fermeture du chemin (facultative)
+canvas.lineWidth = 1;                           // Définition de la largeur de ligne
+canvas.stroke();                                // Application du contour
+
+
+
 
 /*******************************
  *              AG             *
  ******************************/
 
+// Fonction d'évolution de la population
 function evolutionPopulation(population){
-    var ajustementElitism = 0;
-    population.sort(function(a, b){
+    population.sort(function(a, b){                                     // On tri la population pour avoir les meilleurs trajets en premier
         return getLongueur(a)-getLongueur(b);
     });
-    var nouvellePopulation = population;
-
-    // on prend le meilleur trajet et on l'attribut directement à notre nouvelle population
-    // on passe la variable d'ajustement à 1 pour commencer à boucler notre nouvelle génération et y ajouter les enfants
+    var nouvellePopulation = population;                                // Création de la nouvelle population à partir de la population envoyée
 
     // croisement de la population avec un taux défini
-    var crossover = true;
-    if(Math.random() < tauxCroisement){
-        nouvellePopulation.splice(nouvellePopulation.length-2, 2);
-        crossover = true;
-        var parent1 = population[0];
+    var crossover = true;                                               // Initialisation du crossover
+    if(Math.random() < tauxCroisement){                                 // Si le nombre créé en random est inférieur au taux de croisement alors on va effectuer le croisement
+        nouvellePopulation.splice(nouvellePopulation.length-2, 2);      // Suppression des deux dernières valeurs du tableau de population
+        crossover = true;                                               // conservation du crossover à true
+        var parent1 = population[0];                                    // Les deux parents sont les deux meilleures trajets de la population trié, donc les deux premières
         var parent2 = population[1];
-        var enfants = croisement(parent1, parent2);
-        var enfant1 = enfants[0];
+        var enfants = croisement(parent1, parent2);                     // Croisement des parents pour récupérer un tableau de deux nouveaux enfant (progéniture)
+        var enfant1 = enfants[0];                                       // stockage des enfants
         var enfant2 = enfants[1];
 
-        nouvellePopulation.push(enfant1);
+        nouvellePopulation.push(enfant1);                               // enregistrement de la nouvelle progéniture dans la nouvelle population à la place des deux plus mauvaises solutions
         nouvellePopulation.push(enfant2);
 
-    }else{
+    }else{                                                              // Si pas de croisement on passe la variable crossover à false
         crossover = false;
     }
-        if(crossover == true){
-            for(var i=ajustementElitism; i<nouvellePopulation.length; i++){
+        if(crossover == true){                                          // si il y a eu croisement
+            for(var i=0; i<nouvellePopulation.length; i++){             // on fait muter tous les trajets de la nouvelle population
                 muterPopulation(nouvellePopulation[i]);
             }
-            return nouvellePopulation;
-        }else{
-            for(var i=ajustementElitism; i<population.length; i++){
+            return nouvellePopulation;                                  // on renvoie la nouvelle population mutée
+        }else{                                                          // si il n'y a pas eu croisement
+            for(var i=0; i<population.length; i++){                     // on fait muter tous les trajets de la population de départ (qui n'a pas été croisée)
                 muterPopulation(population[i]);
             }
-            return population;
+            return population;                                          // on renvoie la population mutée
         }
 }
 
-// ici on va croiser les parents pour créer une nouvelle progéniture
+// Fonction de croisement des parents pour créer une nouvelle progéniture
 function croisement(p1, p2){
-    // Création des enfants
-    var enfant1 = [];
+    var enfant1 = [];                                                   // Initialisation des deux enfants et du tableau final qui contiendra les deux enfants à retourner
     var enfant2 = [];
     var enfants = [];
-    var positionDepart = Math.floor(Math.random()*(nbVilles-1));
-    var positionArrivee = Math.floor(Math.random()*(nbVilles-1));
-//                var positionDepart = 1;
-//                var positionArrivee = 5;
-    positionDepart = positionDepart.toFixed();
-    positionArrivee = positionArrivee.toFixed();
+    var positionDepart = (Math.floor(Math.random()*(nbVilles-1))).toFixed();        // création du premier point de section aléatoirement
+    var positionArrivee = (Math.floor(Math.random()*(nbVilles-1)).toFixed());       // création du deuxième point de section aléatoirement
 
-    enfant1 = trajetVide(p1.length, enfant1); // avoir tableau d'enfant à la bonne taille rempli avec des "null"
-    enfant2 = trajetVide(p1.length, enfant2); // avoir tableau d'enfant à la bonne taille rempli avec des "null"
+    enfant1 = trajetVide(p1.length, enfant1);                                       // avoir tableau d'enfant à la bonne taille rempli avec des "null"
+    enfant2 = trajetVide(p1.length, enfant2);                                       // avoir tableau d'enfant à la bonne taille rempli avec des "null"
 
-    var tailleEnfant = p1.length;
-
-    for(var i=0; i<tailleEnfant; i++){
-        // si notre point de départ est plus petit que celui d'arrivée alors on attribut au nouvel enfant les villes
-        // du parent dans cet interval
-        if((positionDepart < positionArrivee) && (i > positionDepart) && (i < positionArrivee)){
+    // dans l'intervalle créé avec position de départ et position d'arrivée on va ajouter les valeurs du parent 1 dans l'enfant 1
+    for(var i=0; i<nbVilles; i++){
+        if((positionDepart < positionArrivee) && (i > positionDepart) && (i < positionArrivee)){    // si notre point de départ est plus petit que celui d'arrivée alors on attribut au nouvel enfant les villes du parent dans cet interval
             enfant1[i] = p1[i];
         }
         else if(positionDepart > positionArrivee){
             if(!(i < positionDepart && i > positionArrivee)){
                 enfant1[i] = p1[i];
             }
-        }else{
+        }else{                                                                                      // si aucune des conditions n'est réuni on rempli l'interval de l'enfant 2 par des valeurs du parent 2
             enfant2[i] = p2[i];
         }
     }
 
-    // on trouve les emplacements libres dans l'enfant1 avec le parent 2
+    // on trouve les emplacements libres dans l'enfant1 pour les remplir avec le parent 2
     for(var i=0; i<p2.length; i++){
-        if(!villeDejaExistante(enfant1, p2[i])){
-            for(var j=0; j<enfant1.length; j++){
-                if(enfant1[j] == null){
-                    enfant1[j] = p2[i];
-                    break;
+        if(!villeDejaExistante(enfant1, p2[i])){        // si la ville du parent 2 sur laquelle on boucle n'est pas déjà présente
+            for(var j=0; j<enfant1.length; j++){        // on boucle sur toutes les cases de l'enfant 1
+                if(enfant1[j] == null){                 // si on tombe sur une case vide dans l'enfant 1 on la comble avec la ville courante
+                    enfant1[j] = p2[i];                 // une fois l'opération effectuée
+                    break;                              // on sort de la boucle pour vérifier la ville suivante du parent 2
                 }
             }
         }
-        if(!villeDejaExistante(enfant2, p1[i])){
-            for(var j=0; j<enfant2.length; j++){
-                if(enfant2[j] == null){
-                    enfant2[j] = p1[i];
-                    break;
+        if(!villeDejaExistante(enfant2, p1[i])){        // si la ville du parent 1 sur laquelle on boucle n'est pas déjà présente au sein de l'enfant 2
+            for(var j=0; j<enfant2.length; j++){        // on boucle sur toutes les cases de l'enfant 2
+                if(enfant2[j] == null){                 // si on tombe sur une case vide dans l'enfant 2 on la comble avec la ville courante
+                    enfant2[j] = p1[i];                 // une fois l'opération effectuée
+                    break;                              // on sort de la boucle pour vérifier la ville suivante du parent 1
                 }
             }
         }
     }
-    // on réuni les deux enfants pour les envoyer
-    enfants = [enfant1, enfant2];
+    enfants = [enfant1, enfant2];                       // on réuni les deux enfants pour les envoyer
     return enfants;
 }
 
 // On a un nouvel enfant grâce au croisement, on va maintenant le faire muter
 function muterPopulation(trajetNouvellePopulation){
-    var taille = trajetNouvellePopulation.length;
-    for(var i=0; i<taille; i++){
-        if(Math.random() < tauxMutation){
-            var j = taille*Math.random();
+    var taille = trajetNouvellePopulation.length;       // Récupération de la taille du trajet de la nouvelle population
+    for(var i=0; i<taille; i++){                        // On boucle sur chaque ville du trajet
+        if(Math.random() < tauxMutation){               // Si le nombre créé en random est inférieur au taux de mutation alors on va effectuer la mutation
+            var j = taille*Math.random();               // on initialise aléatoirement un nombre j
 
-            j = j.toFixed();
+            j = j.toFixed();                            // on l'arondi
 
-            if(j == taille){
+            if(j == taille){                            // si il s'est arrondi au dessus et que la valaur dépasse la taille du trajet alors on enlève 1
                 j=j-1;
             }
 
-            // on récupère les villes choisies aléatoirement
-            var ville1 = trajetNouvellePopulation[i];
+            var ville1 = trajetNouvellePopulation[i];   // on récupère les villes choisies aléatoirement et on les stock
             var ville2 = trajetNouvellePopulation[j];
 
-            // on les permutes
-            trajetNouvellePopulation[i] = ville2;
+            trajetNouvellePopulation[i] = ville2;       // on permute les villes
             trajetNouvellePopulation[j] = ville1;
         }
     }
-    return trajetNouvellePopulation; // ok fonctionne bien
+    return trajetNouvellePopulation;
 }
+
+
 
 /*******************************
  *      Fonctions utiles       *
  ******************************/
 
-    // création de la population initiale contenant un ensemble de solution au problem / en ensemble de trajets
+// création de la population initiale contenant un ensemble de solutions au probleme
 function creerPopulation(taillePopulation, init){
     var trajets = [];
     if(init){
-        for(var i=0; i<taillePopulation; i++){
-            var nouveauTrajet = createRandomIndividu();
-            trajets[i] = nouveauTrajet;
+        for(var i=0; i<taillePopulation; i++){              // Pour une taille donnée de population
+            trajets[i] = createRandomIndividu();            // on créé un nouveau trajet aléatoire
         }
     }
     return trajets;
 }
 
-// on créé un individu aléatoirement en ajoutant au hasard toutes nos villes dans le trajet
+// on créé un individu/trajet aléatoirement en ajoutant au hasard toutes nos villes dans le trajet
 function createRandomIndividu(){
-    // on réinitialise le tableau avant de faire les push
-    var villesDuTrajet = [];
-    for(var i=0; i<nbVilles; i++){
+    var villesDuTrajet = [];                        // on réinitialise le tableau avant de faire les push
+    for(var i=0; i<nbVilles; i++){                  // on rempli le tableau des ville d'un trajt avec les villes créées au début du programme
         villesDuTrajet.push(destinations[i]);
     }
-    // on mélange le tableau pour obtenir un trajet aléatoire
-    shuffle(villesDuTrajet);
+    shuffle(villesDuTrajet);                        // on mélange le tableau pour obtenir un trajet aléatoire
     return villesDuTrajet;
 }
 
-// fonction d'aptitude
+// fonction renvoyant le trajet le plus court d'une population (ou fonction d'aptitude)
 function getLongueur(destinations){
-    var longeur     = 0;
-    var longeurTrajet = 0;
-    var villePrecedente;
-    var villeSuivante;
+    var longeur         = 0;
+    var villePrecedente = [];
+    var villeSuivante   = [];
     for(var i=0; i<nbVilles; i++){
         villePrecedente = destinations[i];
-        // on vérifie si on se trouve sur la première ville ou pas
-        if(i+1<nbVilles){
-            villeSuivante = destinations[i+1];
-        }else if(i+1 >= nbVilles){
-            // on revient à la ville de départ
-            villeSuivante = destinations[0];
+        if(i+1<nbVilles){                                                           // on vérifie si on se trouve sur la dernière ville ou pas
+            villeSuivante = destinations[i+1];                                      // si il y a encore une ville après alors on remplace la valeur de la ville suivante
+        }else if(i+1 >= nbVilles){                                                  // si on se trouve sur la dernière
+            villeSuivante = destinations[0];                                        // on revient à la ville de départ
         }
-        longeurTrajet += distanceEntre2Villes(villePrecedente, villeSuivante);
+        longeur += distanceEntre2Villes(villePrecedente, villeSuivante);      // addition des distances au fur et a mesure de la boucle
     }
-    longeur = longeurTrajet;
-
     return longeur;
 }
 
-// dans la population on recherche le meilleur trajet, c'est notre fonction d'aptitude
-
+// dans la population on recherche le meilleur trajet
 function getMeilleurTrajet(candidat){
-    var meilleurTrajet = [];
-    // on assigne le premier trajet du candidat à la variable meilleurTrajet pour initialiser le test
-    meilleurTrajet = candidat[0];
-    for(var i=0; i<candidat.length; i++){
-        if(getLongueur(meilleurTrajet) >= getLongueur(candidat[i])){
-            meilleurTrajet = candidat[i];
+    var meilleurTrajet = [];                                            // initialisation d'un meilleur trajet vide pour le moment
+    meilleurTrajet = candidat[0];                                       // on assigne le premier trajet du candidat à la variable meilleurTrajet pour initialiser le test
+    for(var i=0; i<candidat.length; i++){                               // pour l'ensemble des candidats
+        if(getLongueur(meilleurTrajet) >= getLongueur(candidat[i])){    // si la longueur du meilleur trajet trouvé jusque là est supérieur à la longueur du candidat que l'on test
+            meilleurTrajet = candidat[i];                               // alors le candidat devient le meilleur trajet
         }
     }
     return meilleurTrajet;
 }
 
-// on regarde si le trajet contiens déjà la ville pour éviter les doublons
+// on regarde si le trajet testé contient déjà la ville pour éviter les doublons, on renvoie true ou false
 function villeDejaExistante(tableauEnfant, ville){
-    var retour = true;
-    for(var i=0; i<tableauEnfant.length; i++){
-        if(tableauEnfant[i] == ville){
-            return true;
+    var retour = true;                              // initialisation de la variable de retour
+    for(var i=0; i<tableauEnfant.length; i++){      // pour l'ensemble du tableau enfant
+        if(tableauEnfant[i] == ville){              // si la ville testé est présente dans une des case du tableau enfant
+            return true;                            // on renvoie true
         }
-        if(tableauEnfant[i] != ville){
-            retour = false;
+        if(tableauEnfant[i] != ville){              // si la ville testé n'est pas dans le tableau enfant
+            retour = false;                         // on renvoie false
         }
     }
     return retour;
@@ -360,16 +293,15 @@ function villeDejaExistante(tableauEnfant, ville){
 
 // Création d'un trajet vide
 function trajetVide(nb, trajet){
-    for(var i=0; i<nb; i++){
-        trajet[i] = null;
+    for(var i=0; i<nb; i++){    // pour une taille défini du trajet souhaité
+        trajet[i] = null;       // on rempli toutes les cases par "null"
     }
     return trajet;
 }
 
 // Distance entre deux villes
 function distanceEntre2Villes(ville1, ville2){
-    // théorème de pythagore pour trouver la distance
-    var distance = Math.sqrt(Math.pow((ville1.y - ville2.y), 2) + Math.pow((ville2.x - ville1.x), 2));
+    var distance = Math.sqrt(Math.pow((ville1.y - ville2.y), 2) + Math.pow((ville2.x - ville1.x), 2));      // théorème de pythagore pour trouver la distance entre ville1 et ville2
     return distance;
 }
 
@@ -386,40 +318,42 @@ function shuffle(villesDuTrajet){
 
 // on veut pouvoir afficher lisiblement les trajets
 function toString(trajet){
-    var string = "| ";
+    var string = "- ";
     for(var i=0; i<trajet.length; i++){
-        string += trajet[i].id+" | ";
+        string += trajet[i].id+" - ";
     }
     return string;
 }
+
+
+/*******************************
+ *     Tracé de la courbe      *
+ ******************************/
+// La courbe est créé grâce au module JavaScript ChartJS http://www.chartjs.org
 var randomScalingFactor = function(){ return Math.round(Math.random()*100)};
 var labels = [];
-for(var i=0; i<nbIteration; i++){
-    
+for(var i=0; i<nbIteration; i++){                                                   // pour chaque itération il y aura une valeur
     labels[i] = i;
 }
 var lineChartData = {
     labels : labels,
-    datasets : [
+    datasets : [                                                                    // configuration de la courbe
         {
-            label: "My First dataset",
+            label: "Diagramme système complèxe",
             fillColor : "rgba(220,220,220,0.2)",
             strokeColor : "rgba(220,220,220,1)",
             pointColor : "rgba(220,220,220,1)",
             pointStrokeColor : "#fff",
             pointHighlightFill : "#fff",
             pointHighlightStroke : "rgba(220,220,220,1)",
-            data : courbe
+            data : courbe                                                           // le tableau de points créé pendant les itérations plus haut
         }
     ]
-
 }
-
-window.onload = function(){
+window.onload = function(){                                                         // au chargement de la page on affiche la courbe
     var ctx = document.getElementById("myChart").getContext("2d");
-    window.myLine = new Chart(ctx).Line(lineChartData, {
-        //responsive: true
-    });
+    window.myLine = new Chart(ctx).Line(lineChartData);
 }
+
 </script>
 </body>
